@@ -1,77 +1,113 @@
-// Globals
-let amountSlider = $("#amountSlider");
-let amountSliderValue = $("#amountSliderValue");
-let resultsDiv = $("#results");
-
-// Functions
-
-amountSlider.change(function(){
-    console.log(amountSlider.val());
-    amountSliderValue.text(amountSlider.val());
-    let combos = k_combinations([1, 2, 3, 4, 5,6, 7, 8, 9], amountSlider.val());
-    resultsDiv.text(" ");
-    for(let combo of combos){
-        resultsDiv.append(`<p>${combo}</p>`);
+class Addoku{
+    constructor() {
+        this.sections = [];
+        this.rows = [];
+        this.columns = [];
+        this.blocks = [];
     }
-});
+    addSection(pSection){
+        // Todo check if section contains cell that is already inside this addoku to avoid duplicates
+        this.sections.push(pSection);
+    }
 
+    fillSectionsWithPossibleCandidates(){
+        // This fills all the section with all the possible candidates, only used once when the game starts
+        for(let section of this.sections){
+            let allCombinationsOfSectionLength = this.k_combinations([1, 2, 3, 4, 5 ,6, 7, 8, 9], section.cells.length);
 
-// Helper functions
-function subsetDivision(targetNr){
-    let numberlist = [9,8,7,6,5,4,3,2,1];
-    let results = [];
-    let numberOne = false;
-
-    for(let number of numberlist){
-        let answer = number / targetNr;
-        if(numberlist.includes(answer)){
-            // Scenario with 1 in the calculation
-            // Default scenario
-            // Save number and targetNr as result
-            if(number !== 1 && answer !== 1){
-                numberOne = true;
-            }
-            results.push([number, answer]);
-
-            // Scenario without 1 in calculation
-            // There is an extra possible combo that includes 1
-            if(numberOne){
-                results.push([number, answer, 1]);
-                numberOne = false;
+            switch(section.operator){
+                case "+":
+                    for(let combination of allCombinationsOfSectionLength){
+                        // Reduce is used to sum up the array
+                        if(combination.reduce((a, b) => a + b, 0) === section.value){
+                            section.candidates.push(combination);
+                        }
+                    }
+                    break;
+                case "-":
+                    // We need to create a variable with the value of the largest
+                    // value in the array and delete it from the array
+                    // If we detract the values of the remaining items in the array
+                    // and it equals to section.value, we can add the combination
+                    // to our candidates
+                    for(let combination of allCombinationsOfSectionLength){
+                        // Create variable with largest value in the array
+                        let largest = Math.max(combination);
+                        // Filter the array so the largest value is removed
+                        let filteredCombination = combination.filter((e) => { return e != largest });
+                        // Substract all the values from the filtered array from largest
+                        let filteredItemsSum = filteredCombination.reduce((a, b) => a + b, 0);
+                        if(largest - filteredItemsSum === section.value){
+                            section.candidates.push(combination);
+                        }
+                    }
+                    break;
+                case "*":
+                    for(let combination of allCombinationsOfSectionLength){
+                        if(combination.reduce((a, b) => a * b, 1) === section.value){
+                            section.candidates.push(combination);
+                        }
+                    }
+                    break;
+                case "/":
+                    for(let combination of allCombinationsOfSectionLength){
+                        // Create variable with largest value in array
+                        let largest = Math.max(combination);
+                        // Filter the array so the largest value is removed
+                        let filteredCombination = combination.filter((e) => { return e != largest });
+                        // Divide the largest number with all the numbers from the filtered combination
+                        for(let filteredValue of filteredCombination){
+                            if(largest % filteredValue === 0){
+                                largest = Math.floor(largest / filteredValue);
+                            }
+                            else{
+                                // There is a remainder when trying to divide
+                                // combination is no longer a potential candidate
+                                break;
+                            }
+                        }
+                        if(largest === section.value){
+                            section.candidates.push(combination);
+                        }
+                    }
+                    break;
+                default:
+                    console.error("Wrong operator for section, unable to fill with candidates");
             }
         }
     }
-    return results;
-}
 
-
-// Set is an array, k is the length of the results
-const k_combinations = (set, k) => {
-    if (k > set.length || k <= 0) {
-        return []
-    }
-
-    if (k == set.length) {
-        return [set]
-    }
-
-    if (k == 1) {
-        return set.reduce((acc, cur) => [...acc, [cur]], [])
-    }
-
-    let combs = [], tail_combs = []
-
-    for (let i = 0; i <= set.length - k + 1; i++) {
-        tail_combs = k_combinations(set.slice(i + 1), k - 1)
-        for (let j = 0; j < tail_combs.length; j++) {
-            combs.push([set[i], ...tail_combs[j]])
+    // Helper functions
+    // Set is an array, k is the length of the results
+    k_combinations(set, k){
+        if (k > set.length || k <= 0) {
+            return []
         }
+
+        if (k == set.length) {
+            return [set]
+        }
+
+        if (k == 1) {
+            return set.reduce((acc, cur) => [...acc, [cur]], [])
+        }
+
+        let combs = [], tail_combs = []
+
+        for (let i = 0; i <= set.length - k + 1; i++) {
+            tail_combs = this.k_combinations(set.slice(i + 1), k - 1)
+            for (let j = 0; j < tail_combs.length; j++) {
+                combs.push([set[i], ...tail_combs[j]])
+            }
+        }
+
+        return combs
+    }
+    // Set is an array, every possible length will be returned
+    combinations(set){
+        return set.reduce((acc, cur, idx) => [...acc, ...this.k_combinations(set, idx + 1)], [])
     }
 
-    return combs
-}
-// Set is an array, every possible length will be returned
-const combinations = set => {
-    return set.reduce((acc, cur, idx) => [...acc, ...k_combinations(set, idx + 1)], [])
-}
 
+
+}
