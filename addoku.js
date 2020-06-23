@@ -55,26 +55,32 @@ class Addoku{
                     for(let combination of allCombinationsOfSectionLength){
                         // Create variable with largest value in array
                         let largest = Math.max(...combination);
-                        console.log(`Largest: ${largest}`);
+                        //console.log("******************");
+                        //console.log(`Largest: ${largest}`);
                         // Filter the array so the largest value is removed
                         let filteredCombination = combination.filter((e) => { return e != largest });
-                        console.log(`Filtered combination: ${filteredCombination}`);
+                        //console.log(`Filtered combination: ${filteredCombination}`);
                         // Divide the largest number with all the numbers from the filtered combination
+                        let wrongCombo = false;
                         for(let filteredValue of filteredCombination){
-                            if(largest % filteredValue === 0 && largest !== 1){
-                                console.log(`largest: ${largest}, filteredValue: ${filteredValue}`);
-                                console.log("Yes");
+                            if(largest % filteredValue === 0){
+                                //console.log(`largest: ${largest}, filteredValue: ${filteredValue}`);
+                                //console.log("Yes");
                                 largest = Math.floor(largest / filteredValue);
                             }
                             else{
                                 // There is a remainder when trying to divide
                                 // combination is no longer a potential candidate
-                                break;
+                                wrongCombo = true;
                             }
                         }
-                        if(largest === section.value){
+                        //console.log(`largest: ${largest}, value: ${section.value}`)
+                        if(largest === section.value && !wrongCombo){
+                            //console.log("Adding combo");
                             section.candidates.push(combination);
                         }
+                        //console.log("******************");
+                        //console.log(" ");
                     }
                     break;
                 default:
