@@ -32,9 +32,11 @@ class Addoku{
                     // to our candidates
                     for(let combination of allCombinationsOfSectionLength){
                         // Create variable with largest value in the array
-                        let largest = Math.max(combination);
+                        let largest = Math.max(...combination);
+                        //console.log(`Largest: ${largest}`);
                         // Filter the array so the largest value is removed
                         let filteredCombination = combination.filter((e) => { return e != largest });
+                        //console.log(`Filtered combination: ${filteredCombination}`);
                         // Substract all the values from the filtered array from largest
                         let filteredItemsSum = filteredCombination.reduce((a, b) => a + b, 0);
                         if(largest - filteredItemsSum === section.value){
@@ -52,12 +54,16 @@ class Addoku{
                 case "/":
                     for(let combination of allCombinationsOfSectionLength){
                         // Create variable with largest value in array
-                        let largest = Math.max(combination);
+                        let largest = Math.max(...combination);
+                        console.log(`Largest: ${largest}`);
                         // Filter the array so the largest value is removed
                         let filteredCombination = combination.filter((e) => { return e != largest });
+                        console.log(`Filtered combination: ${filteredCombination}`);
                         // Divide the largest number with all the numbers from the filtered combination
                         for(let filteredValue of filteredCombination){
-                            if(largest % filteredValue === 0){
+                            if(largest % filteredValue === 0 && largest !== 1){
+                                console.log(`largest: ${largest}, filteredValue: ${filteredValue}`);
+                                console.log("Yes");
                                 largest = Math.floor(largest / filteredValue);
                             }
                             else{
