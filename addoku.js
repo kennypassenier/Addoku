@@ -13,23 +13,20 @@ class Addoku{
     fillSectionsWithPossibleCandidates(){
         // This fills all the section with all the possible candidates, only used once when the game starts
         for(let section of this.sections){
-            let allCombinationsOfSectionLength = this.k_combinations([1, 2, 3, 4, 5 ,6, 7, 8, 9], section.cells.length);
-
+            //console.log(section);
+            let allCombinationsOfSectionLength = this.k_combinations([1, 2, 3, 4, 5 ,6, 7, 8, 9], section.size);
+            //console.log(allCombinationsOfSectionLength);
             switch(section.operator){
                 case "+":
                     for(let combination of allCombinationsOfSectionLength){
                         // Reduce is used to sum up the array
                         if(combination.reduce((a, b) => a + b, 0) === section.value){
+                            //console.log(combination);
                             section.candidates.push(combination);
                         }
                     }
                     break;
                 case "-":
-                    // We need to create a variable with the value of the largest
-                    // value in the array and delete it from the array
-                    // If we detract the values of the remaining items in the array
-                    // and it equals to section.value, we can add the combination
-                    // to our candidates
                     for(let combination of allCombinationsOfSectionLength){
                         // Create variable with largest value in the array
                         let largest = Math.max(...combination);
@@ -119,6 +116,68 @@ class Addoku{
     combinations(set){
         return set.reduce((acc, cur, idx) => [...acc, ...this.k_combinations(set, idx + 1)], [])
     }
+
+
+
+
+    static getMultipleCombinations(sectionsArray, excluded = [], pPreviousCandidates = []){
+        let possibleNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+
+        let previousCandidates = pPreviousCandidates;
+        let answer = [];
+
+        console.log("");
+        console.log("");
+        console.log("");
+        console.log("Array: ");
+        console.log(sectionsArray);
+        console.log("Excluded:");
+        console.log(excluded);
+        console.log("previousCandidates:  ");
+        console.log(previousCandidates);
+        for(let candidateArray of sectionsArray[0].candidates){
+            console.log("*****************");
+            console.log("Candidate array: ");
+            console.log(candidateArray);
+            // Filter the excluded numbers out of the possibleNumbers array so we know which numbers we can still work with
+            let filteredNumbers = this.filterArray(possibleNumbers, excluded);
+            console.log("Filtered numbers: ");
+            console.log(filteredNumbers);
+            // Check if all the numbers of the candidateArray are inside the filteredNumbers list
+            let isEveryMemberOfCandidateArrayInFilteredNumbers = candidateArray.every(a => filteredNumbers.includes(a));
+            console.log("Is every member in filtered numbers: ");
+            console.log(isEveryMemberOfCandidateArrayInFilteredNumbers);
+            // If they are, we can add it to the possibilities
+            if(isEveryMemberOfCandidateArrayInFilteredNumbers){
+
+                if(sectionsArray.length > 1){
+                    console.log("There are still more sections to go through");
+                    console.log("Recursion!");
+                    this.getMultipleCombinations(sectionsArray.slice(1), [...excluded, ...candidateArray], [...previousCandidates, candidateArray]);
+                }
+                else{
+                    console.log("This should be the last section!!!!!!!!!!!!!!");
+                    answer.push([...previousCandidates, candidateArray]);
+                }
+
+            }
+            console.log("Answer at this moment: ");
+            console.log(answer);
+
+        }
+        return answer;
+
+    }
+
+    static filterArray(arrayToFilter, excluded){
+        return arrayToFilter.filter(a => !excluded.includes(a));
+    }
+
+    static doArraysIntersect(first, second){
+        return first.filter(value => second.includes(value)).length > 0;
+    }
+
 
 
 
